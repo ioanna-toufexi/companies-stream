@@ -5,9 +5,9 @@ url <- "https://stream.companieshouse.gov.uk/"
 
 getCompanies <- function(file.name=NULL, timeout=0, timepoint)
 {
-  #file.name <- "data/test18.json"
-  #timeout <- 10
-  #timepoint <- 9982490
+  file.name <- "data/test130.json"
+  timeout <- 100
+  timepoint <- 9692100
   con <- file(description=file.name, open="a")
   
   write_fun <- function(con) {
@@ -19,10 +19,10 @@ getCompanies <- function(file.name=NULL, timeout=0, timepoint)
   r <- tryCatch(GET(
     url = url,
     path = "companies",
-    config(timeout = timeout),
+    config(timeout = 3),
     query = list(timepoint = timepoint),
     write_stream(write_fun(con)),
-    add_headers(timeout = 10),
+    #add_headers(timeout = 300),
     add_headers(Authorization = "E_QO_pPF4kGUGJ4yFoD2v75eLBvn_HOsPd3cIOk_"),
     add_headers(Accept = "application/json"),
     add_headers(`Accept-Encoding` = "gzip, deflate")),
@@ -31,7 +31,7 @@ getCompanies <- function(file.name=NULL, timeout=0, timepoint)
   
   if (!is.null(file.name)){ close(con) }
   
-  #file.name <- "data/broadcast.json"
+  #file.name <- "data/test121.json"
   
   s <- read_file(file.name)
   
@@ -61,13 +61,14 @@ getCompanies <- function(file.name=NULL, timeout=0, timepoint)
             Accounts.AccountCategory = data.accounts.last_accounts.type,
             DissolutionDate = data.date_of_cessation,
             IncorporationDate = data.date_of_creation,
-            SICCode.SicText_1 = data.sic_codes
-       
-            )
+            SICCode = data.sic_codes) %>% 
+     mutate(SICCode = str_c(SICCode, collapse = " "))
+   
+   
   streamed_df
 }
 
 #getCompanies("data/test14.json", 1, 9982490)
 
-streamed_df <- getCompanies("data/test20.json", 300, 9750000)
+streamed_df <- getCompanies("data/test25.json", 1, 9700000)
 

@@ -34,7 +34,7 @@ get_companies_from_file <- function(csv_path) {
     unite(SICCode, c(SIC1, 
                      SIC2,
                      SIC3, 
-                     SIC4), sep = " ", remove=FALSE)
+                     SIC4), sep = " ")
   
 }
 
