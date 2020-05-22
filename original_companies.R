@@ -1,26 +1,26 @@
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(readr, dplyr, lubridate, zoo, ggplot2, stringr,
-               purrr)
+               purrr,plotly)
 
-all_companies <- read_csv("C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-05-01/BasicCompanyDataAsOneFile-2020-05-01.csv")
-
-selected <- all_companies %>% 
-  select(CompanyName, 
-         CompanyNumber, 
-         RegAddress.AddressLine1,
-         RegAddress.AddressLine2,
-         RegAddress.PostTown, 
-         RegAddress.PostCode,
-         CompanyCategory,
-         CompanyStatus,
-         DissolutionDate,
-         IncorporationDate,
-         Accounts.AccountCategory,
-         #CountryOfOrigin,
-         SICCode.SicText_1,
-         SICCode.SicText_2,
-         SICCode.SicText_3,
-         SICCode.SicText_4) 
+# all_companies <- read_csv("C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-05-01/BasicCompanyDataAsOneFile-2020-05-01.csv")
+# 
+# selected <- all_companies %>% 
+#   select(CompanyName, 
+#          CompanyNumber, 
+#          RegAddress.AddressLine1,
+#          RegAddress.AddressLine2,
+#          RegAddress.PostTown, 
+#          RegAddress.PostCode,
+#          CompanyCategory,
+#          CompanyStatus,
+#          DissolutionDate,
+#          IncorporationDate,
+#          Accounts.AccountCategory,
+#          #CountryOfOrigin,
+#          SICCode.SicText_1,
+#          SICCode.SicText_2,
+#          SICCode.SicText_3,
+#          SICCode.SicText_4) 
 
 
 
@@ -60,9 +60,9 @@ joined <- joined %>%
   mutate(change = (count.mar_apr_20-count.jan_feb_20)/count.jan_feb_20*100) %>% 
   arrange(desc(change))
 
-since_last_year <- selected %>% 
+since_last_year <- companies %>% 
   #filter(str_detect(SICCode.SicText_1, regex("55100|56302|56101|55201|55202|55209|55300|55900|56102|56103"))) %>% 
-  filter(str_detect(SICCode.SicText_1, regex("47910"))) %>% 
+  filter(str_detect(SICCode, regex("47910"))) %>% 
   
   mutate(IncorporationDate = dmy(IncorporationDate)) %>% 
   filter(IncorporationDate > dmy("01/01/2017")) %>% #,
@@ -70,16 +70,14 @@ since_last_year <- selected %>%
           #  as.yearmon(c("2020-3","2020-2","2020-1",
            #              "2019-3","2019-2","2019-1")))) %>% 
   mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-  group_by(SICCode.SicText_1,IncorporationMonth) %>% 
+  #mutate(SICCode = "47910") %>% 
+  group_by(SICCode,IncorporationMonth) %>% 
   #group_by(IncorporationMonth) %>% 
   summarise(count = n()) #%>% 
   #arrange(desc(count))
 
 write_csv(joined, "joined.csv")
   
-ggplot(data = since_last_year) + 
-  geom_line(mapping = aes(x = IncorporationMonth, y = count)) + 
-  facet_wrap(~ SICCode.SicText_1, nrow = 4, scales = "free")
 
 by_place <- selected %>% 
   filter(SICCode.SicText_1=="47910 - Retail sale via mail order houses or via Internet") %>% 

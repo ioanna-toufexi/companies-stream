@@ -6,7 +6,7 @@ extract_SIC <- function(text) {
   str_extract(text, "^[0-9]+")
 }
 
-get_companies_from_file <- function(csv_path) {
+tidy_variables <- function(csv_path) {
   
   all_companies <- read_csv(csv_path)
   
@@ -36,7 +36,7 @@ get_companies_from_file <- function(csv_path) {
                      SIC3, 
                      SIC4), sep = " ")
   
+  selected
 }
 
-get_companies_from_file("C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-05-01/BasicCompanyDataAsOneFile-2020-05-01.csv")
 
