@@ -19,7 +19,6 @@ tidy_variables <- function(csv_path) {
            RegAddress.PostCode,
            CompanyCategory,
            CompanyStatus,
-           DissolutionDate,
            IncorporationDate,
            Accounts.AccountCategory,
            #CountryOfOrigin,

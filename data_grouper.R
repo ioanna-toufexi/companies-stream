@@ -12,7 +12,7 @@ get_new_per_month_and_siccode <- function(siccodes_regex, from_date) {
     #  as.yearmon(c("2020-3","2020-2","2020-1",
     #              "2019-3","2019-2","2019-1")))) %>% 
     mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-    mutate(SICCode = "47910") %>% 
+    #mutate(SICCode = "47910") %>% 
     group_by(SICCode,IncorporationMonth) %>% 
     #group_by(IncorporationMonth) %>% 
     summarise(count = n()) #%>% 
