@@ -22,7 +22,7 @@ getCompanies <- function(file.name=NULL, timeout_in_secs=10, timepoint=NULL)
     config(timeout = timeout_in_secs),
     query = list(timepoint = timepoint),
     write_stream(write_fun(con)),
-    add_headers(Authorization = Sys.getenv('STREAMING_API_KEY')),
+    add_headers(Authorization = Sys.getenv('CH_STREAMING_API_KEY')),
     add_headers(Accept = "application/json"),
     add_headers(`Accept-Encoding` = "gzip, deflate")),
     error = function(e) return(e))
