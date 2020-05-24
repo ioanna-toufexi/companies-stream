@@ -11,7 +11,6 @@ companies <- tidy_variables(all_companies)
 
 
 since_last_year <- get_new_per_month_and_siccode(companies, str_c(names(hospitality), collapse = "|"), "01/10/2019")
-#since_last_year <- get_new_per_month_and_siccode(from_date="01/07/2019")
 
 #test it
 aaaa <- companies %>% 
