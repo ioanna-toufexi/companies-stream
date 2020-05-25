@@ -54,7 +54,7 @@ filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
     df <- filter(df, IncorporationDate > dmy(start_date))
   }
   if(!is.null(end_date)) {
-    df <- filter(df, IncorporationDate > dmy(end_date))
+    df <- filter(df, IncorporationDate < dmy(end_date))
   }
   df
 }
@@ -65,10 +65,4 @@ filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
      group_by_at(vars(siccode_text,"IncorporationMonth")) %>% 
      summarise(count = n())
  }
- 
-# count_per_SICCode <- function(df) {
-#   df %>% 
-#     group_by(SICCode) %>% 
-#     summarise(count = n()) %>% 
-#     arrange(desc(count))
-# }
+

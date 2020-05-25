@@ -1,6 +1,5 @@
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(readr, dplyr, geojsonio)
-
+pacman::p_load(readr, dplyr, geojsonio, leaflet, htmltools)
 
 # 
 # joined <- joined %>% 
@@ -15,28 +14,45 @@ pacman::p_load(readr, dplyr, geojsonio)
 
 
 
-pa1 <- colorNumeric("Blues", domain = merged_map$jan_feb)
+get_html_map <- function() {
+  #risk.bins <-c(0, 20, 40, 60, 80, 100, 300)
+  pa1 <- colorBin( "Blues", 
+                        bins=c(10, 20, 30, 40, 50, 60, 70, 80, 300))#,
+                        #pretty = FALSE)
+  #pa1 <- colorBin("Blues", domain = merged_map$jan_feb, bins=6)
+  #pa1 <- colorNumeric("Blues", domain = c(0,100))
+  
+  pa2 <- colorNumeric("Blues", domain = merged_map$mar_apr, reverse = TRUE)
+  
+  popup_sb <- paste0(merged_map$mar_apr)
+  
+  # xxx <- london_mapp %>% 
+  # leaflet() %>% 
+  #   addTiles() %>% 
+  #   addPolygons(popup = ~popup_sb)
+  # 
+  # save_html(xxx, file = "xxx.html", background = "white")
+  
+  #df <- as.data.frame(london_mapp$)
+  
+  for_export <- leaflet(width = 320, height = 300) %>%
+    addProviderTiles("CartoDB.Positron") %>%
+    setView(-0.100000, 51.509865, zoom = 9) %>% 
+    addPolygons(data = merged_map, 
+                #to reverse colours change here
+                fillColor = ~pa1(mar_apr), 
+                fillOpacity = 1, 
+                weight = 0.9, 
+                smoothFactor = 0.2, 
+                stroke=TRUE,
+                color="white", 
+    popup = ~popup_sb)# %>% 
+    #addLegend(pal = pa1,
+    #          values = aaa$mar_apr,
+    #          position = "topright",
+    #          title = "aaaa")
 
-pa2 <- colorNumeric("Blues", domain = merged_map$jan_feb, reverse = TRUE)
+  save_html(for_export, file = "mar_april.html", background = "white")
+  
+}
 
-#popup_sb <- paste0(imd_boroughs$IMD_avg)
-
-for_export <- leaflet() %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  setView(-0.118092, 51.509865, zoom = 10) %>% 
-  addPolygons(data = merged_map, 
-              #to reverse colours change here
-              fillColor = ~pa1(jjj$jan_feb), 
-              fillOpacity = 1, 
-              weight = 0.9, 
-              smoothFactor = 0.2, 
-              stroke=TRUE,
-              color="white") %>% 
-              #popup = ~popup_sb) %>% 
-  addLegend(pal = pa1,
-            values = jjj$jan_feb,
-            position = "topright",
-            title = "aaaa") %>% 
-  addMiniMap()
-
-save_html(for_export, file = "jjj.html", background = "white")
