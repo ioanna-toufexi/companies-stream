@@ -10,10 +10,14 @@ all_companies <- read_csv("C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2
 companies <- tidy_variables(all_companies)
 
 
-since_last_year <- get_new_per_month_and_siccode(companies, str_c(names(hospitality), collapse = "|"), "01/10/2019")
+since_last_year <- get_new_per_month_and_siccode(companies, 
+                                                 str_c(names(hospitality), collapse = "|"), 
+                                                 start_date = "01/10/2019")
 
-since_last_year <- get_new_per_month_and_siccode1(companies, str_c(names(hospitality), collapse = "|")) %>% 
-  filter_by_date(start_date = "01/10/2019")
+since_last_year <- get_new_per_postcode(companies, 
+                                        str_c(names(hospitality), collapse = "|"), 
+                                        start_date = "01/10/2019",
+                                        end_date= "29/02/2020")
 
 
 #test it
