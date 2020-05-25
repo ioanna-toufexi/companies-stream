@@ -1,32 +1,18 @@
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(readr, dplyr, geojsonio)
 
-joined <- full_join(mar_apr_20,jan_feb_20, by = "RegAddress.PostCode", suffix = c(".mar_apr_20", ".jan_feb_20"))
 
-joined <- joined %>% 
-  mutate_all(~replace(., is.na(.), 0))
+# 
+# joined <- joined %>% 
+#   #filter(count.mar_apr_20>10) %>% 
+#   mutate(change = (count.mar_apr_20-count.jan_feb_20)/count.jan_feb_20*100) %>% 
+#   arrange(desc(change))
 
-jj <- left_join(joined,lookup,by = c("RegAddress.PostCode" = "pcds"))
 
-jjj <- jj %>% 
-  group_by(ladcd) %>% 
-  summarise(mar_apr = sum(count.mar_apr_20),jan_feb = sum(count.jan_feb_20))
+# aaa <- aaa %>% 
+#   mutate(change = (mar_apr-jan_feb)/jan_feb*100) %>% 
+#   arrange(desc(change))
 
-joined <- joined %>% 
-  #filter(count.mar_apr_20>10) %>% 
-  mutate(change = (count.mar_apr_20-count.jan_feb_20)/count.jan_feb_20*100) %>% 
-  arrange(desc(change))
-
-names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__December_2019__Boundaries_UK_BFC.csv") %>% 
-  select(lad19cd,lad19nm)
-
-aaa <- left_join(jjj, names, by = c("ladcd"="lad19cd"))
-
-aaa <- aaa %>% 
-  mutate(change = (mar_apr-jan_feb)/jan_feb*100) %>% 
-  arrange(desc(change))
-
-merged_map <- geo_join(london_mapp, jjj, "lad19cd", "ladcd")
 
 
 pa1 <- colorNumeric("Blues", domain = merged_map$jan_feb)

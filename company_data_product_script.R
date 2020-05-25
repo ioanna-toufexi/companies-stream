@@ -10,25 +10,10 @@ all_companies <- read_csv("C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2
 companies <- tidy_variables(all_companies)
 
 
+# Faceted
 since_last_year <- get_new_per_month_and_siccode(companies, 
                                                  str_c(names(hospitality), collapse = "|"), 
                                                  start_date = "01/10/2019")
-
-since_last_year <- get_new_per_postcode(companies, 
-                                        str_c(names(hospitality), collapse = "|"), 
-                                        start_date = "01/10/2019",
-                                        end_date= "29/02/2020")
-
-
-#test it
-aaaa <- companies %>% 
-  filter(str_detect(companies$SIC1, regex(str_c(names(hospitality), collapse = "|")))|
-         str_detect(companies$SIC2, regex(str_c(names(hospitality), collapse = "|")))|
-         str_detect(companies$SIC3, regex(str_c(names(hospitality), collapse = "|")))|
-         str_detect(companies$SIC4, regex(str_c(names(hospitality), collapse = "|")))) %>% 
-mutate(IncorporationDate = dmy(IncorporationDate)) %>% 
-  filter(IncorporationDate > dmy("01/01/2017")) %>% 
-  filter(SIC4)
 
 plot_interactive(since_last_year)
 
@@ -38,12 +23,41 @@ saveWidget(g, "g3.html", selfcontained = F, libdir = "lib")
 
 
 
+
 #Map
+
+
+jan_feb_20 <- get_new_per_postcode(companies, 
+                                      str_c(names(hospitality), collapse = "|"), 
+                                      start_date = "01/01/2020",
+                                      end_date= "29/02/2020")
+
+mar_apr_20 <- get_new_per_postcode(companies, 
+                                   str_c(names(hospitality), collapse = "|"), 
+                                   start_date = "01/03/2020",
+                                   end_date= "31/04/2020")
+
+joined <- full_join(mar_apr_20,jan_feb_20, by = "RegAddress.PostCode", suffix = c(".mar_apr_20", ".jan_feb_20"))
+
+joined <- joined %>% 
+  mutate_all(~replace(., is.na(.), 0))
 
 postcode_to_lad_lookup <- read_csv("C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv") %>% 
   select(pcds, ladcd)
 
-jan_feb_20 <- get_new_per_postcode(companies_filtered_by_SICCodes, start_date="31/12/2019", end_date="01/03/2020")
+jj <- left_join(joined,lookup,by = c("RegAddress.PostCode" = "pcds"))
 
-mar_apr_20 <- get_new_per_postcode(companies_filtered_by_SICCodes, start_date="29/02/2020")
+jjj <- jj %>% 
+  group_by(ladcd) %>% 
+  summarise(mar_apr = sum(count.mar_apr_20),jan_feb = sum(count.jan_feb_20))
 
+names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__December_2019__Boundaries_UK_BFC.csv") %>% 
+  select(lad19cd,lad19nm)
+
+aaa <- left_join(jjj, names, by = c("ladcd"="lad19cd"))
+
+url <- "https://opendata.arcgis.com/datasets/1d78d47c87df4212b79fe2323aae8e08_0.geojson"
+
+london_mapp <- geojson_read(url, what = 'sp')
+
+merged_map <- geo_join(london_mapp, jjj, "lad19cd", "ladcd")
