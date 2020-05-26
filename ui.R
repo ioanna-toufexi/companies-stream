@@ -1,9 +1,6 @@
-if(!require("pacman")) install.packages("pacman")
-pacman::p_load(shiny, leaflet, shinyjs)
-
-# shinyUI(bootstrapPage(
-#   leafletOutput("london_map")
-# ))
+library(shiny)
+library(leaflet)
+library(shinyjs)
 
 fluidPage(
 

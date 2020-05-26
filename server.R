@@ -1,5 +1,5 @@
-if(!require("pacman")) install.packages("pacman")
-pacman::p_load(shiny, leaflet)
+library(shiny)
+library(leaflet)
 
 # Main Shiny server function
 function(input, output) {
