@@ -4,14 +4,12 @@ library(shinyjs)
 
 fluidPage(
 
-   titlePanel("Hospitality "),
+   titlePanel("The effect of Covid-19 on the hospitality sector"),
    
-   p("New"),
+   p("The effect on new companies incorporated in the first months of 2020, according to Companies House data"),
    
    tags$img(id="more", src="more.png", alt="", width="60%"),
    
-   tags$img(id="less", src="less.png", alt="", width="60%"),
-
    mainPanel(
      useShinyjs(),  # Set up shinyjs
      actionButton("btn", "Click to toggle"),
