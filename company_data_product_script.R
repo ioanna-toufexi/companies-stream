@@ -42,7 +42,7 @@ joined <- full_join(mar_apr_20,jan_feb_20, by = "RegAddress.PostCode", suffix = 
 joined <- joined %>% 
   mutate_all(~replace(., is.na(.), 0))
 
-summarise(joined, sum(count.jan_feb_20))
+#summarise(joined, sum(count.jan_feb_20))
 
 postcode_to_lad_lookup <- read_csv("C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv") %>% 
   select(pcds, ladcd)

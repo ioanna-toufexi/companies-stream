@@ -19,28 +19,15 @@ get_html_map <- function() {
   pa1 <- colorBin( "Blues", 
                         bins=c(10, 20, 30, 40, 50, 60, 70, 80, 300))#,
                         #pretty = FALSE)
-  #pa1 <- colorBin("Blues", domain = merged_map$jan_feb, bins=6)
-  #pa1 <- colorNumeric("Blues", domain = c(0,100))
-  
-  pa2 <- colorNumeric("Blues", domain = merged_map$mar_apr, reverse = TRUE)
-  
-  popup_sb <- paste0(merged_map$mar_apr)
-  
-  # xxx <- london_mapp %>% 
-  # leaflet() %>% 
-  #   addTiles() %>% 
-  #   addPolygons(popup = ~popup_sb)
-  # 
-  # save_html(xxx, file = "xxx.html", background = "white")
-  
-  #df <- as.data.frame(london_mapp$)
+
+  popup_sb <- paste0(merged_map$jan_feb)
   
   for_export <- leaflet(width = 320, height = 300) %>%
     addProviderTiles("CartoDB.Positron") %>%
     setView(-0.100000, 51.509865, zoom = 9) %>% 
     addPolygons(data = merged_map, 
                 #to reverse colours change here
-                fillColor = ~pa1(mar_apr), 
+                fillColor = ~pa1(jan_feb), 
                 fillOpacity = 1, 
                 weight = 0.9, 
                 smoothFactor = 0.2, 
@@ -52,7 +39,8 @@ get_html_map <- function() {
     #          position = "topright",
     #          title = "aaaa")
 
-  save_html(for_export, file = "mar_april.html", background = "white")
+  save_html(for_export, file = "jan_feb.html", background = "white")
+  #saveWidget(for_export, "jan_feb1.html", selfcontained = F, libdir = "lib1")
   
 }
 
