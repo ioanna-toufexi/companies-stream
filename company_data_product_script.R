@@ -17,20 +17,30 @@ source("mapper.R")
 
 # Sourcing Company data product CSV
 company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-05-01/BasicCompanyDataAsOneFile-2020-05-01.csv"
-companies <- read_csv(company_data_product_path) %>% filter_variables()
+all_companies <- read_csv(company_data_product_path) 
+companies <- all_companies %>% filter_variables()
 
 ########## Faceted plot ###########
 
 # Filtering and grouping data per month and SIC code
-since_last_year <- get_new_per_month_and_siccode(companies, 
-                                                 str_c(names(hospitality), collapse = "|"), 
-                                                 start_date = "01/10/2019")
-# Creating faceted plot
-g <- plot_interactive(since_last_year)
+most_affected_2020 <- get_new_per_month_and_siccode(companies, 
+                                                 str_c(names(most_affected), collapse = "|"), 
+                                                 start_date = "01/01/2020")
 
-#saveWidget(g, "p2.html")
-#p <- plot_ly(since_last_year, x = ~IncorporationMonth, y = ~count)
-saveWidget(g, "faceted.html", selfcontained = F, libdir = "lib")
+least_affected_or_too_small_2020 <- get_new_per_month_and_siccode(companies, 
+                                                    str_c(names(least_affected_or_too_small), collapse = "|"), 
+                                                    start_date = "01/01/2020")
+
+# Creating faceted plots
+plot_interactive(most_affected_2020, 
+                 "New hospitality companies plummeted in April 2020", 
+                 "more.png", per_facet_col = 3, img_width = 9, img_height = 6.5)
+
+plot_interactive(least_affected_or_too_small_2020, 
+                 "Economic activities less affected or with small numbers", 
+                 "less.png", per_facet_col = 4, img_width = 10, img_height = 3)
+
+#saveWidget(g, "faceted.html", selfcontained = F, libdir = "lib")
 
 
 
@@ -38,26 +48,26 @@ saveWidget(g, "faceted.html", selfcontained = F, libdir = "lib")
 ########### Map ###########
 
 # Creating two london borough maps, 
-# one for January/February 2020 and one for March/April 2020
+# one for March 2020 and one for April 2020
 # to show the change in the number of new companies just before and after COVID-19 spread in 
 
-# Filtering and grouping data per postcode for Jan/Feb 2020
-jan_feb_20 <- get_new_per_postcode(companies, 
+# Filtering and grouping data per postcode for Mar 2020
+mar_20 <- get_new_per_postcode(companies, 
                                       str_c(names(hospitality_all), collapse = "|"), 
-                                      start_date = "01/01/2020",
-                                      end_date= "29/02/2020")
+                                      start_date = "01/03/2020",
+                                      end_date= "31/03/2020")
 
-# Filtering and grouping data per postcode for Mar/Apr 2020
-mar_apr_20 <- get_new_per_postcode(companies, 
+# Filtering and grouping data per postcode for Apr 2020
+apr_20 <- get_new_per_postcode(companies, 
                                    str_c(names(hospitality_all), collapse = "|"), 
-                                   start_date = "01/03/2020",
+                                   start_date = "01/04/2020",
                                    end_date= "30/04/2020")
 
 # Joining in one dataframe
-joined <- full_join(mar_apr_20,jan_feb_20, by = "RegAddress.PostCode", suffix = c(".mar_apr_20", ".jan_feb_20")) %>% 
+joined <- full_join(mar_20,apr_20, by = "RegAddress.PostCode", suffix = c(".mar_20", ".apr_20")) %>% 
   mutate_all(~replace(., is.na(.), 0))
 
-#summarise(joined, sum(count.jan_feb_20))
+#summarise(joined, sum(count.mar_20))
 
 # Using https://geoportal.statistics.gov.uk/datasets/postcode-to-output-area-to-lower-layer-super-output-area-to-middle-layer-super-output-area-to-local-authority-district-february-2020-lookup-in-the-uk
 # to convert postcodes to Local Authority Districts
@@ -67,7 +77,7 @@ postcode_to_lad_lookup <- read_csv("C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_L
 # New companies per Local Authority District
 new_by_lad <- left_join(joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
                       group_by(ladcd) %>% 
-                      summarise(mar_apr = sum(count.mar_apr_20),jan_feb = sum(count.jan_feb_20))
+                      summarise(mar = sum(count.mar_20),apr = sum(count.apr_20))
 
 # Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfe-1
 # as a lookup to get the names of the LADs
@@ -86,5 +96,5 @@ london_mapp <- geojson_read(url, what = 'sp')
 merged_map <- geo_join(london_mapp, new_by_lad, "lad19cd", "ladcd")
 
 #Creating the maps
-get_jan_feb_html_map()
-get_mar_apr_html_map()
+get_mar_html_map()
+get_apr_html_map()

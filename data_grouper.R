@@ -3,6 +3,8 @@ pacman::p_load(dplyr,stringr,lubridate,zoo,tidyr)
 
 get_new_per_month_and_siccode <- function(companies, siccodes_regex=".*", start_date) {
   
+  #TODO - loop
+  
   a <- companies %>% 
     filter_by_SICCode("SIC1", siccodes_regex) %>% 
     filter_by_date(start_date = start_date) %>% 
@@ -30,6 +32,8 @@ get_new_per_month_and_siccode <- function(companies, siccodes_regex=".*", start_
 
 get_new_per_postcode <- function(companies, siccodes_regex=".*", start_date=NULL, end_date=NULL) {
 
+  #TODO - loop
+  
   companies %>% 
     filter(str_detect(companies[["SIC1"]], regex(siccodes_regex))|
            str_detect(companies[["SIC2"]], regex(siccodes_regex))|
