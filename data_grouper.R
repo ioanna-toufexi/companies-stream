@@ -65,4 +65,25 @@ filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
      group_by_at(vars(siccode_text,"IncorporationMonth")) %>% 
      summarise(count = n())
  }
-
+ 
+ filter_variables <- function(all_companies) {
+   
+   selected <- all_companies %>% 
+     select(CompanyName, 
+            CompanyNumber, 
+            RegAddress.AddressLine1,
+            RegAddress.AddressLine2,
+            RegAddress.PostTown, 
+            RegAddress.PostCode,
+            CompanyCategory,
+            CompanyStatus,
+            IncorporationDate,
+            Accounts.AccountCategory,
+            SIC1 = SICCode.SicText_1,
+            SIC2 = SICCode.SicText_2,
+            SIC3 = SICCode.SicText_3,
+            SIC4 = SICCode.SicText_4)
+   
+   selected
+ }
+ 

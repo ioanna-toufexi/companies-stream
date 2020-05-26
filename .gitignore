@@ -1,2 +1,5 @@
 data/
 .Rhistory
+lib/
+plotly html/
+www/random.html
