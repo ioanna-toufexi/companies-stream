@@ -1,5 +1,5 @@
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(dplyr,stringr,lubridate,zoo)
+pacman::p_load(dplyr,stringr,lubridate,zoo,tidyr)
 
 get_new_per_month_and_siccode <- function(companies, siccodes_regex=".*", start_date) {
   

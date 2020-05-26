@@ -24,8 +24,10 @@ most_affected = list(`55100`="Hotels and similar accommodation",
                    `56301`= "Licensed clubs",
                    `56302`= "Public houses and bars")
 
-less_affected_or_too_small  = list(
+least_affected_or_too_small  = list(
                    `55201`= "Holiday centres and villages",
                    `55202`= "Youth hostels",
                    `55300`= "Camping grounds, recreational vehicle parks and trailer parks",
                    `56290`= "Other food service activities")
+
+test_sic = list(`56302`= "Public houses and bars")
