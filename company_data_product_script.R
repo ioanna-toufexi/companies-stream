@@ -34,7 +34,7 @@ least_affected_or_too_small_2020 <- get_new_per_month_and_siccode(companies,
 # Creating faceted plots
 plot_interactive(most_affected_2020, 
                  "New hospitality companies plummeted in April 2020", 
-                 "more.png", per_facet_col = 3, img_width = 9, img_height = 6.5)
+                 "more.png", per_facet_col = 3, img_width = 10, img_height = 7)
 
 plot_interactive(least_affected_or_too_small_2020, 
                  "Economic activities less affected or with small numbers", 

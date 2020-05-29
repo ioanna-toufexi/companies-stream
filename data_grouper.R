@@ -65,6 +65,7 @@ filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
  
  count_per_month_and_SICCode_text <- function(companies, siccode_text) {
    companies %>% 
+     mutate_at(siccode_text, function(x){str_replace(x, "([0-9]* - )", "")}) %>% 
      mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
      group_by_at(vars(siccode_text,"IncorporationMonth")) %>% 
      summarise(count = n())

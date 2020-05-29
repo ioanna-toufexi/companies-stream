@@ -1,5 +1,5 @@
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(ggplot2, plotly)
+pacman::p_load(ggplot2, plotly, dplyr)
 
 plot_interactive <- function(df, plot_title, save_to_file, per_facet_col, img_width, img_height) {
 

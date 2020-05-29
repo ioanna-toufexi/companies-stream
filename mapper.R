@@ -27,7 +27,8 @@ get_mar_html_map <- function() {
               position = "topright",
               title = "New hospitality<br>companies<br>(Mar 2020)",
               labels=c("0-9", "10-19", "20-29", "30-39", 
-                       "40-49", "50-59", "60-69", "70-79", ">=80"))
+                       "40-49", "50-59", "60-69", "70-79", ">=80"),
+              opacity = 1)
 
   save_html(for_export, file = "mar.html", background = "white")
 }
