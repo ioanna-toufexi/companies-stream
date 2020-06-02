@@ -26,12 +26,11 @@ fluidPage(
      any effect is considered not significant."),
 
    br(),
-   p("The following map shows the drop in new companies between March and April for the London area."),
+   p("The following map shows the drop in new companies between March and April for the London area (based on the registered office address)."),
    mainPanel(
      useShinyjs(),  # Set up shinyjs
      actionButton("btn", "Click to toggle"),
      tags$iframe(id="map_mar", seamless="seamless", src= "mar.html", width=800, height=800, frameBorder="0"),
      tags$iframe(id="map_apr", seamless="seamless", hidden=TRUE, src= "apr.html", width=800, height=800, frameBorder="0")),
-   
 
 )

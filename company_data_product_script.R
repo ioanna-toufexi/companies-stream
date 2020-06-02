@@ -79,7 +79,7 @@ new_by_lad <- left_join(joined, postcode_to_lad_lookup,by = c("RegAddress.PostCo
                       group_by(ladcd) %>% 
                       summarise(mar = sum(count.mar_20),apr = sum(count.apr_20))
 
-# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfe-1
+# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc
 # as a lookup to get the names of the LADs
 names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__December_2019__Boundaries_UK_BFC.csv") %>% 
   select(lad19cd,lad19nm)
@@ -87,7 +87,7 @@ names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__December
 # Adding names
 new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad19cd"))
 
-# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc-1
+# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc
 # to get the geojson
 url <- "https://opendata.arcgis.com/datasets/1d78d47c87df4212b79fe2323aae8e08_0.geojson?where=UPPER(lad19cd)%20like%20'%25E090000%25'"
 london_mapp <- geojson_read(url, what = 'sp')
