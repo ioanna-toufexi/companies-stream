@@ -1,4 +1,4 @@
-data/
+data/*
 .Rhistory
 lib/
 plotly html/

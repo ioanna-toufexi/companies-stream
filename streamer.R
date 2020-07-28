@@ -3,12 +3,12 @@ pacman::p_load(httr, readr, stringr, jsonlite, dplyr)
 
 url <- "https://stream.companieshouse.gov.uk/"
 
-getCompanies <- function(file.name=NULL, timeout_in_secs=10, timepoint=NULL)
+storeCompaniesFromStream <- function(file_name=NULL, timeout_in_secs=10, timepoint=NULL)
 {
-  if (is.null(file.name)) {
-    file.name <- str_c("data/stream_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".json")
+  if (is.null(file_name)) {
+    file_name <- str_c("data/stream_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".json")
   }
-  con <- file(description=file.name, open="a")
+  con <- file(description=file_name, open="a")
   
   write_fun <- function(con) {
     function(x) {
@@ -28,12 +28,8 @@ getCompanies <- function(file.name=NULL, timeout_in_secs=10, timepoint=NULL)
     error = function(e) return(e))
   
   
-  if (!is.null(file.name)){ close(con) }
+  if (!is.null(file_name)){ close(con) }
   
-  
+  file_name
 }
-
-#getCompanies("data/test14.json", 1, 9982490)
-
-companies <- getCompanies(timeout_in_secs = 360, timepoint = "10000000")
 
