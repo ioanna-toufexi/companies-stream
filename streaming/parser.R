@@ -35,7 +35,8 @@ filter_stream <- function(streamed_df) {
            CompanyStatus = data.company_status,
            IncorporationDate = data.date_of_creation,
            Accounts.AccountCategory = data.accounts.last_accounts.type,
-           SICCode = data.sic_codes)
+           SICCode = data.sic_codes,
+           event.timepoint)
   
   selected_df <- selected_df %>% 
     mutate(SICCode = map(SICCode,conc)) %>% 
