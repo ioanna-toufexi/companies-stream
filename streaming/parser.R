@@ -57,5 +57,5 @@ run_on_df <- function(df,func) {
 
 # Concatenates vector data
 conc <- function(x) {
-    str_c(x,collapse=" ")
+    str_c(x,collapse=", ")
 }
