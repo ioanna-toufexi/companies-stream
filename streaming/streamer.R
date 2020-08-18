@@ -6,7 +6,7 @@ url <- "https://stream.companieshouse.gov.uk/"
 storeCompaniesFromStream <- function(file_name=NULL, timeout_in_secs=10, timepoint=NULL)
 {
   if (is.null(file_name)) {
-    file_name <- str_c("../data/stream_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".json")
+    file_name <- str_c("data/stream_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".json")
   }
   con <- file(description=file_name, open="a")
   
