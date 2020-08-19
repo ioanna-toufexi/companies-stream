@@ -7,18 +7,19 @@ source("processing/sic_mappings.R")
 
 file_name <- storeCompaniesFromStream(timeout_in_secs = 600, timepoint = "16998847")
 
-stream_data_df1 <- get_stream_data_from_file("data/16998847_to_17055978.json")
-stream_data_df2 <- get_stream_data_from_file("data/16441500_to_16499999.json")
-stream_data_df3 <- get_stream_data_from_file("data/16500000_to_16998846.json")
-stream_data_df4 <- get_stream_data_from_file("data/17055979_to_17087150_stream_2020-08-17_120813_BST.json")
+# TODO loop
+df1 <- get_stream_data_from_file("data/16441500_to_16499999.json")
+df2 <- get_stream_data_from_file("data/16500000_to_16998846.json")
+df3 <- get_stream_data_from_file("data/16998847_to_17055978.json")
+df4 <- get_stream_data_from_file("data/17055979_to_17087150.json")
+df5 <- get_stream_data_from_file("data/17087151_to_17112162.json")
 
+df_binded <- bind_rows(df1,df2,df3,df4,df5)
 
-
-#the_data <- bind_rows(df,df1,df2)
-
-df <- stream_data_df4 %>% 
+df <- df_binded %>% 
   mutate(IncorporationDate = ymd(IncorporationDate)) %>% 
-  filter(IncorporationDate > ymd("2020-07-31")) %>% 
+  filter(IncorporationDate >= ymd("2020-08-01")) %>% 
+  filter(IncorporationDate <= ymd("2020-08-17")) %>%
   filter(str_detect(SICCode, regex(str_c(names(hospitality_all), collapse = "|")))) %>% 
   filter(CompanyStatus == "active")
 
@@ -40,9 +41,11 @@ unique_rows_df1 <- unique_rows_df1 %>%
 grouped <- unique_rows_df1 %>% 
   #mutate_at(siccode_text, function(x){str_replace(x, "([0-9]* - )", "")}) %>% 
   mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-  group_by(SICCode, IncorporationMonth) %>% 
+  group_by(RegAddress.PostCode) %>%
+  #group_by(SICCode, IncorporationMonth) %>% 
   summarise(count = n())
 
+write_csv(grouped,str_c("data/UK_stream_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
 # Runs a given function on all columns of a dataframe
 run_on_df <- function(df,func) {

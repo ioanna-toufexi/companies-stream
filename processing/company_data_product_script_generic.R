@@ -7,20 +7,20 @@ source("processing/mapper.R")
 
 ########## Edit these parameters as suitable ########## 
 
-company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-04-01/BasicCompanyDataAsOneFile-2020-04-01.csv"
-postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv"
+company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-08-01/BasicCompanyDataAsOneFile-2020-08-01.csv"
+postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_MAY20_UK_LU/PCD_OA_LSOA_MSOA_LAD_MAY20_UK_LU.csv"
 
 siccode_group = hospitality_all
 
 overview_start_date = "01/01/2019"
 faceted_plot_title = "New hospitality companies per month 2020"
 
-first_period_suffix = ".apr_20"
-second_period_suffix = ".jul_20"
-first_period_start_date = "01/04/2020"
-first_period_end_date= "30/04/2020"
-second_period_start_date = "01/07/2020"
-second_period_end_date= "31/07/2020"
+first_period_suffix = ".apr_19"
+second_period_suffix = ".apr_20"
+first_period_start_date = "01/04/2019"
+first_period_end_date= "30/04/2019"
+second_period_start_date = "01/04/2020"
+second_period_end_date= "30/04/2020"
 
 ########################################################
 
@@ -39,7 +39,17 @@ new_per_month_and_siccode <- get_new_per_month_and_siccode(companies,
                                                     str_c(names(siccode_group), collapse = "|"), 
                                                     overview_start_date)
 
+new_per_month_and_siccode1 <- get_new_per_month_and_siccode1(companies, 
+                                                           str_c(names(siccode_group), collapse = "|"), 
+                                                           "01/04/2020",
+                                                           "30/04/2020")
+
 write_csv(new_per_month_and_siccode,str_c("data/UK_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+
+write_csv(new_per_month_and_siccode1,str_c("data/UK_April_20_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+
+all <- rbind(new_per_month_and_siccode1, grouped) %>% 
+  mutate(IncorporationMonth = as.yearmon(IncorporationMonth))
 
 # Creating faceted plots
 plot_interactive(new_per_month_and_siccode, 
@@ -83,20 +93,21 @@ postcode_to_lad_lookup <- read_csv(postcode_to_lad_lookup_path) %>%
 # New companies per Local Authority District
 new_by_lad <- left_join(joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
   group_by(ladcd) %>% 
-  summarise(apr = sum(count.apr_20),jul = sum(count.jul_20))
+  summarise(apr_19 = sum(count.apr_19),apr_20 = sum(count.apr_20))
 
 # Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc
 # as a lookup to get the names of the LADs
-names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__December_2019__Boundaries_UK_BFC.csv") %>% 
-  select(lad19cd,lad19nm)
+names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020__Boundaries_UK_BFC.csv") %>% 
+  select(lad20cd,lad20nm)
 
 # Adding names
-new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad19cd"))
+new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad20cd"))
 
 new_by_lad <- new_by_lad %>% 
-  mutate("change (%)" = round((jul-apr)/apr*100)) %>% 
-  arrange(desc(jul))
+  mutate("change (%)" = round((apr_20-apr_19)/apr_19*100)) %>% 
+  arrange(desc(apr_20))
 
+write_csv(new_by_lad,str_c("data/LADs_Aprils_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
 
 
