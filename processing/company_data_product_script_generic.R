@@ -5,120 +5,111 @@ source("processing/plotter.R")
 source("processing/sic_mappings.R")
 source("processing/mapper.R")
 
-########## Edit these parameters as suitable ########## 
+# This script generates 
 
-company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-08-01/BasicCompanyDataAsOneFile-2020-08-01.csv"
-postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_MAY20_UK_LU/PCD_OA_LSOA_MSOA_LAD_MAY20_UK_LU.csv"
+########## Edit these parameters before runs ########## 
+
+company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyData-2020-08-01-part6_6/BasicCompanyData-2020-08-01-part6_6.csv"
+postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv"
+lad_names_path = "C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020__Boundaries_UK_BFC.csv"
 
 siccode_group = hospitality_all
 
-overview_start_date = "01/01/2019"
-faceted_plot_title = "New hospitality companies per month 2020"
-
 first_period_suffix = ".apr_19"
 second_period_suffix = ".apr_20"
-first_period_start_date = "01/04/2019"
+first_period_start_date = "23/04/2019"
 first_period_end_date= "30/04/2019"
-second_period_start_date = "01/04/2020"
+second_period_start_date = "23/04/2020"
 second_period_end_date= "30/04/2020"
 
 ########################################################
-
 
 # Sourcing Company data product CSV
 all_companies <- read_csv(company_data_product_path) 
 companies <- all_companies %>% filter_variables()
 
+# Getting regex from SICCodes
+siccode_group <- str_c(names(siccode_group), collapse = "|")
+
+# Getting column names for later
+before = str_c("count",first_period_suffix,sep="")
+after = str_c("count",second_period_suffix,sep="")
+
+#################### SICCodes ##########################
+
+# Filtering and grouping data per month and SIC code for the first period
+siccode_first <- get_new_per_siccode(companies, 
+                                        siccode_group, 
+                                          first_period_start_date,
+                                            first_period_end_date)
+
+# ...and the second (or, use df from streamed data instead)
+siccode_second <- get_new_per_siccode(companies, 
+                                        siccode_group, 
+                                           second_period_start_date,
+                                             second_period_end_date)
+
+# Uncomment if you want to use df from streamed data
+# siccode_second <- grouped_siccodes
+
+# Join the two together
+siccode_joined <- full_join(siccode_first,siccode_second, 
+                    by = "SICCode", 
+                    suffix = c(first_period_suffix, second_period_suffix)) %>% 
+  mutate_all(~replace(., is.na(.), 0))
+
+# And calculate change
+siccode_joined <- siccode_joined %>% 
+  mutate("change (%)" = round((!!as.name(after) - !!as.name(before))/!!as.name(before)*100)) %>% 
+  arrange(!!as.name(after))
+
+# Save it!
+write_csv(df,str_c("data/compare_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
 
-########## Faceted plot ###########
+#################### Postcodes ########################
 
-
-# Filtering and grouping data per month and SIC code
-new_per_month_and_siccode <- get_new_per_month_and_siccode(companies, 
-                                                    str_c(names(siccode_group), collapse = "|"), 
-                                                    overview_start_date)
-
-new_per_month_and_siccode1 <- get_new_per_month_and_siccode1(companies, 
-                                                           str_c(names(siccode_group), collapse = "|"), 
-                                                           "01/04/2020",
-                                                           "30/04/2020")
-
-write_csv(new_per_month_and_siccode,str_c("data/UK_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
-
-write_csv(new_per_month_and_siccode1,str_c("data/UK_April_20_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
-
-all <- rbind(new_per_month_and_siccode1, grouped) %>% 
-  mutate(IncorporationMonth = as.yearmon(IncorporationMonth))
-
-# Creating faceted plots
-plot_interactive(new_per_month_and_siccode, 
-                 faceted_plot_title, 
-                 str_c("faceted_plot_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".png"), 
-                 per_facet_col = 1, img_width = 15, img_height = 12)
-
-
-
-
-########### Map ###########
 
 # Filtering and grouping data per postcode for first period
-first_period <- get_new_per_postcode(companies, 
-                               str_c(names(siccode_group), collapse = "|"), 
+postcode_first <- get_new_per_postcode(companies, 
+                               siccode_group, 
                                first_period_start_date,
                                first_period_end_date)
 
-# Filtering and grouping data per postcode for second period
-second_period <- get_new_per_postcode(companies, 
-                               str_c(names(siccode_group), collapse = "|"), 
+# ...and the second (or, use df from streamed data instead)
+postcode_second <- get_new_per_postcode(companies, 
+                               siccode_group, 
                                second_period_start_date,
                                second_period_end_date)
 
+# Uncomment if you want to use df from streamed data
+# siccode_second <- grouped_siccodes
+
 # Joining in one dataframe
-joined <- full_join(first_period,second_period, 
+postcode_joined <- full_join(first_period,second_period, 
                     by = "RegAddress.PostCode", 
                     suffix = c(first_period_suffix, second_period_suffix)) %>% 
           mutate_all(~replace(., is.na(.), 0))
 
+postcode_joined <- postcode_joined %>% 
+  mutate("change (%)" = round((!!as.name(after)-!!as.name(before))/!!as.name(before)*100)) %>% 
+  arrange(desc(!!as.name(after)))
 
 # Using lookup from geoportal.statistics.gov.uk
 # to convert postcodes to Local Authority Districts
 postcode_to_lad_lookup <- read_csv(postcode_to_lad_lookup_path) %>% 
   select(pcds, ladcd)
-
-
-
-
-
-# New companies per Local Authority District
-new_by_lad <- left_join(joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
+new_by_lad <- left_join(postcode_joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
   group_by(ladcd) %>% 
-  summarise(apr_19 = sum(count.apr_19),apr_20 = sum(count.apr_20))
+  summarise(first_period_suffix = sum(!!as.name(before)),second_period_suffix = sum(!!as.name(after)))
 
-# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc
+# Using lad boundaries file from geoportal.statistics.gov.uk
 # as a lookup to get the names of the LADs
-names <- read_csv("C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020__Boundaries_UK_BFC.csv") %>% 
+names <- read_csv(lad_names_path) %>% 
   select(lad20cd,lad20nm)
 
 # Adding names
 new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad20cd"))
 
-new_by_lad <- new_by_lad %>% 
-  mutate("change (%)" = round((apr_20-apr_19)/apr_19*100)) %>% 
-  arrange(desc(apr_20))
+write_csv(new_by_lad,str_c("data/compare_LADs_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
-write_csv(new_by_lad,str_c("data/LADs_Aprils_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
-
-
-
-# Using https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-bfc
-# to get the geojson
-url <- "https://opendata.arcgis.com/datasets/1d78d47c87df4212b79fe2323aae8e08_0.geojson?where=UPPER(lad19cd)%20like%20'%25E090000%25'"
-london_mapp <- geojson_read(url, what = 'sp')
-
-# Merging data and geojson
-merged_map <- geo_join(london_mapp, new_by_lad, "lad19cd", "ladcd")
-
-#Creating the maps
-get_mar_html_map()
-get_apr_html_map()

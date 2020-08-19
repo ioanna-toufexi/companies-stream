@@ -1,9 +1,11 @@
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(dplyr,stringr,lubridate,zoo,tidyr)
 
-get_new_per_month_and_siccode1 <- function(companies, siccodes_regex=".*", start_date, end_date) {
+#TODO: remove duplications!
+
+get_new_per_siccode <- function(companies, siccodes_regex=".*", start_date, end_date) {
   
-  #TODO - loop
+  #TODO:loop
   
   a <- companies %>% 
     filter_by_SICCode("SIC1", siccodes_regex) %>% 
@@ -25,8 +27,7 @@ get_new_per_month_and_siccode1 <- function(companies, siccodes_regex=".*", start
   
   aa %>% 
     unite(SICCode, c(SIC1, SIC2, SIC3, SIC4), sep = " ", na.rm = TRUE) %>% 
-    mutate(IncorporationMonth = as.yearmon(IncorporationMonth)) %>% 
-    group_by(SICCode,IncorporationMonth) %>% 
+    group_by(SICCode) %>% 
     summarise(count=sum(count))
 }
 
