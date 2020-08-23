@@ -15,21 +15,18 @@ lad_names_path = "C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020_
 
 siccode_group = hospitality_all
 
-first_period_suffix = ".apr_19"
-second_period_suffix = ".apr_20"
-first_period_start_date = "23/04/2019"
-first_period_end_date= "30/04/2019"
-second_period_start_date = "23/04/2020"
-second_period_end_date= "30/04/2020"
+first_period_suffix = ".aug_19"
+second_period_suffix = ".aug_20"
+first_period_start_date = "12/08/2019"
+first_period_end_date= "14/08/2019"
+second_period_start_date = "18/08/2020"
+second_period_end_date= "20/08/2020"
 
 ########################################################
 
 # Sourcing Company data product CSV
 all_companies <- read_csv(company_data_product_path) 
 companies <- all_companies %>% filter_variables()
-
-# Getting regex from SICCodes
-siccode_group <- str_c(names(siccode_group), collapse = "|")
 
 # Getting column names for later
 before = str_c("count",first_period_suffix,sep="")
@@ -38,19 +35,19 @@ after = str_c("count",second_period_suffix,sep="")
 #################### SICCodes ##########################
 
 # Filtering and grouping data per month and SIC code for the first period
-siccode_first <- get_new_per_siccode(companies, 
+siccode_first <- group_by_siccode(companies, 
                                         siccode_group, 
                                           first_period_start_date,
                                             first_period_end_date)
 
 # ...and the second (or, use df from streamed data instead)
-siccode_second <- get_new_per_siccode(companies, 
+siccode_second <- group_by_siccode(companies, 
                                         siccode_group, 
                                            second_period_start_date,
                                              second_period_end_date)
 
 # Uncomment if you want to use df from streamed data
-# siccode_second <- grouped_siccodes
+ siccode_second <- grouped_siccodes %>% select(SICCode,count)
 
 # Join the two together
 siccode_joined <- full_join(siccode_first,siccode_second, 
@@ -63,6 +60,11 @@ siccode_joined <- siccode_joined %>%
   mutate("change (%)" = round((!!as.name(after) - !!as.name(before))/!!as.name(before)*100)) %>% 
   arrange(!!as.name(after))
 
+# Add description
+siccode_joined <- siccode_joined %>% 
+                  mutate(SICCodeDesc = siccode_group[SICCode])
+  
+
 # Save it!
 write_csv(df,str_c("data/compare_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
@@ -71,13 +73,13 @@ write_csv(df,str_c("data/compare_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S
 
 
 # Filtering and grouping data per postcode for first period
-postcode_first <- get_new_per_postcode(companies, 
+postcode_first <- group_by_postcode(companies, 
                                siccode_group, 
                                first_period_start_date,
                                first_period_end_date)
 
 # ...and the second (or, use df from streamed data instead)
-postcode_second <- get_new_per_postcode(companies, 
+postcode_second <- group_by_postcode(companies, 
                                siccode_group, 
                                second_period_start_date,
                                second_period_end_date)
@@ -112,4 +114,12 @@ names <- read_csv(lad_names_path) %>%
 new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad20cd"))
 
 write_csv(new_by_lad,str_c("data/compare_LADs_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+
+
+#################### SICCodes AND Postcodes ########################
+
+siccode_and_postcode_first <- group_by_siccode_and_postcode(companies, 
+                                      siccode_group, 
+                                      first_period_start_date,
+                                      first_period_end_date)
 

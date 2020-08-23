@@ -1,0 +1,4 @@
+CompanyName,CompanyNumber,RegAddress.AddressLine1,RegAddress.AddressLine2,RegAddress.PostTown,RegAddress.PostCode,CompanyCategory,CompanyStatus,IncorporationDate,Accounts.AccountCategory,SICCode,event.timepoint
+MIFFLIN CONSTRUCTION LIMITED,00967252,Worcester Road,Leominster,Herefordshire,HR6 8AY,ltd,active,1969-12-01,small,43999,16998849
+CHEFSIA LTD,11539575,7 Dove Close,NA,Andover,SP10 5PB,ltd,active,2018-08-28,micro-entity,56290,16998850
+RIDEWISE LTD,12057957,36 Curzon Road,NA,Bolton,BL1 4RW,ltd,active,2019-06-18,null,"46520, 49390, 79909, 95210",17055977

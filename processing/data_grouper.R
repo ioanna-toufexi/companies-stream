@@ -3,81 +3,60 @@ pacman::p_load(dplyr,stringr,lubridate,zoo,tidyr)
 
 #TODO: remove duplications!
 
-get_new_per_siccode <- function(companies, siccodes_regex=".*", start_date, end_date) {
+filter_by_date_and_siccode <- function(companies, siccodes, start_date, end_date) {
   
-  #TODO:loop
-  
-  a <- companies %>% 
-    filter_by_SICCode("SIC1", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date, end_date = end_date) %>% 
-    count_per_month_and_SICCode_text("SIC1")
-  b <- companies %>% 
-    filter_by_SICCode("SIC2", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date, end_date = end_date) %>% 
-    count_per_month_and_SICCode_text("SIC2")
-  c <- companies %>% 
-    filter_by_SICCode("SIC3", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date, end_date = end_date) %>% 
-    count_per_month_and_SICCode_text("SIC3")
-  d <- companies %>% 
-    filter_by_SICCode("SIC4", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date, end_date = end_date) %>% 
-    count_per_month_and_SICCode_text("SIC4")
-  aa <- bind_rows(a,b,c,d)
-  
-  aa %>% 
-    unite(SICCode, c(SIC1, SIC2, SIC3, SIC4), sep = " ", na.rm = TRUE) %>% 
-    group_by(SICCode) %>% 
-    summarise(count=sum(count))
-}
-
-get_new_per_month_and_siccode <- function(companies, siccodes_regex=".*", start_date) {
-  
-  #TODO - loop
+  companies <- companies %>% 
+    mutate(IncorporationDate = dmy(IncorporationDate)) %>% 
+    filter(IncorporationDate >= dmy(start_date)) %>% 
+    filter(IncorporationDate <= dmy(end_date))
   
   a <- companies %>% 
-    filter_by_SICCode("SIC1", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date) %>% 
-    count_per_month_and_SICCode_text("SIC1")
+    select(-(starts_with("SIC")&(!contains("SIC1")))) %>% 
+    mutate_at("SIC1", function(x){str_extract(x, "([0-9]*)")}) %>%
+    filter(str_detect(str_c(names(siccodes), collapse=" "), SIC1))
   b <- companies %>% 
-    filter_by_SICCode("SIC2", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date) %>% 
-    count_per_month_and_SICCode_text("SIC2")
+    select(-(starts_with("SIC")&(!contains("SIC2")))) %>% 
+    mutate_at("SIC2", function(x){str_extract(x, "([0-9]*)")}) %>%
+    filter(str_detect(str_c(names(siccodes), collapse=" "), SIC2))
   c <- companies %>% 
-    filter_by_SICCode("SIC3", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date) %>% 
-    count_per_month_and_SICCode_text("SIC3")
+    select(-(starts_with("SIC")&(!contains("SIC3")))) %>% 
+    mutate_at("SIC3", function(x){str_extract(x, "([0-9]*)")}) %>%
+    filter(str_detect(str_c(names(siccodes), collapse=" "), SIC3))
   d <- companies %>% 
-    filter_by_SICCode("SIC4", siccodes_regex) %>% 
-    filter_by_date(start_date = start_date) %>% 
-    count_per_month_and_SICCode_text("SIC4")
-   aa <- bind_rows(a,b,c,d)
+    select(-(starts_with("SIC")&(!contains("SIC4")))) %>% 
+    mutate_at("SIC4", function(x){str_extract(x, "([0-9]*)")}) %>% 
+    filter(str_detect(str_c(names(siccode_group), collapse=" "), SIC4))
+  companies <- bind_rows(a,b,c,d)
   
-  aa %>% 
-    unite(SICCode, c(SIC1, SIC2, SIC3, SIC4), sep = " ", na.rm = TRUE) %>% 
-    mutate(IncorporationMonth = as.yearmon(IncorporationMonth)) %>% 
-    group_by(SICCode,IncorporationMonth) %>% 
-    summarise(count=sum(count))
+  companies %>%
+    unite(SICCode, c(SIC1, SIC2, SIC3, SIC4), sep = " ", na.rm = TRUE)
 }
 
-get_new_per_postcode <- function(companies, siccodes_regex=".*", start_date=NULL, end_date=NULL) {
-
-  #TODO - loop
+group_by_siccode_and_postcode <- function(companies, siccodes, start_date, end_date) {
   
-  companies %>% 
-    filter(str_detect(companies[["SIC1"]], regex(siccodes_regex))|
-           str_detect(companies[["SIC2"]], regex(siccodes_regex))|
-           str_detect(companies[["SIC3"]], regex(siccodes_regex))|
-           str_detect(companies[["SIC4"]], regex(siccodes_regex))) %>% 
-    filter_by_date(start_date = start_date, end_date = end_date) %>% 
-    group_by(RegAddress.PostCode) %>% 
-    summarise(count = n()) %>% 
-    arrange(desc(count))
+  companies <- filter_by_date_and_siccode(companies, siccodes, start_date, end_date)
+  
+   companies %>%
+    group_by(SICCode, RegAddress.PostCode) %>%
+    summarise(count = n())
 }
 
-filter_by_SICCode <- function(companies, siccode_text, siccodes_regex) {
-  companies %>% 
-    filter(str_detect(companies[[siccode_text]], regex(siccodes_regex)))
+group_by_siccode <- function(companies, siccodes, start_date, end_date) {
+  
+  companies <- filter_by_date_and_siccode(companies, siccodes, start_date, end_date)
+  
+  companies %>%
+    group_by(SICCode) %>%
+    summarise(count = n())
+}
+
+group_by_postcode <- function(companies, siccodes, start_date, end_date) {
+  
+  companies <- filter_by_date_and_siccode(companies, siccodes, start_date, end_date)
+  
+  companies %>%
+    group_by(RegAddress.PostCode) %>%
+    summarise(count = n())
 }
 
 filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
@@ -92,14 +71,6 @@ filter_by_date <- function(df, start_date=NULL, end_date=NULL) {
   }
   df
 }
- 
- count_per_month_and_SICCode_text <- function(companies, siccode_text) {
-   companies %>% 
-     mutate_at(siccode_text, function(x){str_replace(x, "([0-9]* - )", "")}) %>% 
-     mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-     group_by_at(vars(siccode_text,"IncorporationMonth")) %>% 
-     summarise(count = n())
- }
  
  filter_variables <- function(all_companies) {
    

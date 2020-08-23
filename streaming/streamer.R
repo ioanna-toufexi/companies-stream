@@ -1,5 +1,5 @@
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(httr, readr, stringr, jsonlite, dplyr)
+pacman::p_load(httr, readr, stringr, dplyr)
 
 url <- "https://stream.companieshouse.gov.uk/"
 

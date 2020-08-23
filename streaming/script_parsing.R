@@ -1,11 +1,14 @@
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(lubridate, tidyr, zoo)
+pacman::p_load(dplyr, stringr, lubridate, tidyr, zoo)
 
 source("streaming/parser.R")
 source("processing/sic_mappings.R")
+source("streaming/stream_data_grouper.R")
 
 
 ########## Edit these parameters before runs ###########
+
+filelist = c("data/16998847_to_17055978_stream_2020-08-14_203615_BST.json")
 
 filelist = c("data/16441500_to_16499999.json",
              "data/16500000_to_16998846.json",
@@ -15,8 +18,8 @@ filelist = c("data/16441500_to_16499999.json",
 
 siccode_group = hospitality_all
 
-start_date = "2020-08-01"
-end_date = "2020-08-17"
+start_date = "2020-08-12"
+end_date = "2020-08-14"
 
 ###################################################
 
@@ -26,58 +29,18 @@ end_date = "2020-08-17"
 df_binded <- data_frame()
 
 for (x in filelist) {
+  print(str_c("Parsing ", x, "..."))
   df_binded <- bind_rows(df_binded, get_stream_data_from_file(x))
 }
 
-#filtering
-df <- df_binded %>% 
-  mutate(IncorporationDate = ymd(IncorporationDate)) %>% 
-  filter(IncorporationDate >= ymd(start_date)) %>% 
-  filter(IncorporationDate <= ymd(end_date)) %>%
-  filter(str_detect(SICCode, regex(str_c(names(siccode_group), collapse = "|")))) %>% 
-  filter(CompanyStatus == "active")
+grouped_siccodes <- group_streamed_by_siccode(df_binded, siccode_group, start_date, end_date)
 
-#sorting per company and timepoint
-df <- df[order(df$CompanyNumber, -order(df$event.timepoint) ), ]
+grouped_postcodes <- group_streamed_by_postcode(df_binded, siccode_group, start_date, end_date)
 
-#...so that we only keep the latest timepoint for each company
-unique_rows_df <- df[ !duplicated(df$CompanyNumber), ]
+grouped_siccodes_and_postcodes <- group_streamed_by_siccode_and_postcode(df_binded, siccode_group, start_date, end_date)
 
-#remove timepoint now
-unique_rows_df <- select(unique_rows_df, -event.timepoint)
-
-#For companies with more than one reate a separate row for each SICCode
-split_rows_df <- unique_rows_df %>% 
-  separate_rows(SICCode, sep = ", ")
-
-#As now there will be some rows with unwanted SICCodes, filter by SICCode again
-split_rows_df <- split_rows_df %>% 
-  filter(str_detect(SICCode, regex(str_c(names(hospitality_all), collapse = "|")))) %>% 
-  mutate(SICCode = hospitality_all[SICCode]) %>% 
-  run_on_df(unlist)
-
-#Group by SICCode and month
-grouped_siccodes <- split_rows_df %>% 
-  mutate_at(siccode_text, function(x){str_replace(x, "([0-9]* - )", "")}) %>% 
-  mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-  group_by(SICCode, IncorporationMonth) %>% 
-  summarise(count = n())
-
-#Group by postcode and month
-grouped_postcodes <- split_rows_df %>% 
-  mutate(IncorporationMonth = as.yearmon(IncorporationDate)) %>% 
-  group_by(RegAddress.PostCode, IncorporationMonth) %>%
-  summarise(count = n())
 
 #Save results in CSVs
 write_csv(grouped_siccodes,str_c("data/stream_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
-write_csv(grouped_postcodes,str_c("data/stream_postcodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
-
-# Helper function
-# Runs a given function on all columns of a dataframe
-run_on_df <- function(df,func) {
-  for (i in seq_along(df)) {
-    df[[i]] <- func(df[[i]])
-  }
-  df
-}
+write_csv(grouped_postcodes,str_c("data/stream_Postcodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+write_csv(grouped_siccodes_and_postcodes,str_c("data/stream_SICCodes_and_Postcodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))

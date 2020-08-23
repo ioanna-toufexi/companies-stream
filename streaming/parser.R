@@ -1,4 +1,5 @@
-library(purrr)
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load(purrr, readr, jsonlite)
 
 get_stream_data_from_file <- function(file.name) {
   
