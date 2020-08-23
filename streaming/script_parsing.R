@@ -8,8 +8,6 @@ source("streaming/stream_data_grouper.R")
 
 ########## Edit these parameters before runs ###########
 
-filelist = c("data/16998847_to_17055978_stream_2020-08-14_203615_BST.json")
-
 filelist = c("data/16441500_to_16499999.json",
              "data/16500000_to_16998846.json",
              "data/16998847_to_17055978.json",

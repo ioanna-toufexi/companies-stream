@@ -21,6 +21,7 @@ first_period_start_date = "12/08/2019"
 first_period_end_date= "14/08/2019"
 second_period_start_date = "18/08/2020"
 second_period_end_date= "20/08/2020"
+use_streamed_data_for_second_period= TRUE
 
 ########################################################
 
@@ -40,14 +41,16 @@ siccode_first <- group_by_siccode(companies,
                                           first_period_start_date,
                                             first_period_end_date)
 
-# ...and the second (or, use df from streamed data instead)
-siccode_second <- group_by_siccode(companies, 
-                                        siccode_group, 
-                                           second_period_start_date,
-                                             second_period_end_date)
+# ...and the second
+ifelse(use_streamed_data_for_second_period==TRUE, {
+  siccode_second <- grouped_siccodes %>% select(SICCode,count)
+}, {
+  siccode_second <- group_by_siccode(companies, 
+                                     siccode_group, 
+                                     second_period_start_date,
+                                     second_period_end_date)
+})
 
-# Uncomment if you want to use df from streamed data
- siccode_second <- grouped_siccodes %>% select(SICCode,count)
 
 # Join the two together
 siccode_joined <- full_join(siccode_first,siccode_second, 
@@ -78,17 +81,19 @@ postcode_first <- group_by_postcode(companies,
                                first_period_start_date,
                                first_period_end_date)
 
-# ...and the second (or, use df from streamed data instead)
-postcode_second <- group_by_postcode(companies, 
-                               siccode_group, 
-                               second_period_start_date,
-                               second_period_end_date)
+# ...and the second
+ifelse(use_streamed_data_for_second_period==TRUE, {
+  siccode_second <- grouped_siccodes
+}, {
+  postcode_second <- group_by_postcode(companies, 
+                                       siccode_group, 
+                                       second_period_start_date,
+                                       second_period_end_date)
+})
 
-# Uncomment if you want to use df from streamed data
-# siccode_second <- grouped_siccodes
 
 # Joining in one dataframe
-postcode_joined <- full_join(first_period,second_period, 
+postcode_joined <- full_join(postcode_first,postcode_second, 
                     by = "RegAddress.PostCode", 
                     suffix = c(first_period_suffix, second_period_suffix)) %>% 
           mutate_all(~replace(., is.na(.), 0))
@@ -113,7 +118,7 @@ names <- read_csv(lad_names_path) %>%
 # Adding names
 new_by_lad <- left_join(new_by_lad, names, by = c("ladcd"="lad20cd"))
 
-write_csv(new_by_lad,str_c("data/compare_LADs_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+write_csv(new_by_lad,str_c("data/compare_by_LAD_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
 
 
 #################### SICCodes AND Postcodes ########################
@@ -123,3 +128,39 @@ siccode_and_postcode_first <- group_by_siccode_and_postcode(companies,
                                       first_period_start_date,
                                       first_period_end_date)
 
+ifelse(use_streamed_data_for_second_period==TRUE, {
+  siccode_and_postcode_second <- grouped_siccodes_and_postcodes
+}, {
+  siccode_and_postcode_second <- group_by_siccode_and_postcode(companies, 
+                                                               siccode_group, 
+                                                               second_period_start_date,
+                                                               second_period_end_date)
+})
+
+# Joining in one dataframe
+siccode_and_postcode_joined <- full_join(siccode_and_postcode_first,siccode_and_postcode_second, 
+                             by = c("SICCode", "RegAddress.PostCode"), 
+                             suffix = c(first_period_suffix, second_period_suffix)) %>% 
+  mutate_all(~replace(., is.na(.), 0))
+
+siccode_and_postcode_joined <- siccode_and_postcode_joined %>% 
+  mutate("change (%)" = round((!!as.name(after)-!!as.name(before))/!!as.name(before)*100)) %>% 
+  arrange(desc(!!as.name(after)))
+
+# Using lookup from geoportal.statistics.gov.uk
+# to convert postcodes to Local Authority Districts
+postcode_to_lad_lookup <- read_csv(postcode_to_lad_lookup_path) %>% 
+  select(pcds, ladcd)
+new_by_siccode_and_lad <- left_join(siccode_and_postcode_joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
+  group_by(ladcd) %>% 
+  summarise(first_period_suffix = sum(!!as.name(before)),second_period_suffix = sum(!!as.name(after)))
+
+# Using lad boundaries file from geoportal.statistics.gov.uk
+# as a lookup to get the names of the LADs
+names <- read_csv(lad_names_path) %>% 
+  select(lad20cd,lad20nm)
+
+# Adding names
+new_by_siccode_and_lad <- left_join(new_by_siccode_and_lad, names, by = c("ladcd"="lad20cd"))
+
+write_csv(new_by_siccode_and_lad,str_c("data/compare_by_SICCode_and_LAD_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
