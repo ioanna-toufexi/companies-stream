@@ -1,15 +1,13 @@
 if(!require("pacman")) install.packages("pacman")
 pacman::p_load(readr, htmlwidgets, geojsonio, tigris)
 source("processing/data_grouper.R")
-source("processing/plotter.R")
 source("processing/sic_mappings.R")
-source("processing/mapper.R")
 
 # This script generates 
 
 ########## Edit these parameters before runs ########## 
 
-company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyData-2020-08-01-part6_6/BasicCompanyData-2020-08-01-part6_6.csv"
+company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-08-01/BasicCompanyDataAsOneFile-2020-08-01.csv"
 postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv"
 lad_names_path = "C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020__Boundaries_UK_BFC.csv"
 
@@ -17,10 +15,10 @@ siccode_group = hospitality_all
 
 first_period_suffix = ".aug_19"
 second_period_suffix = ".aug_20"
-first_period_start_date = "12/08/2019"
-first_period_end_date= "14/08/2019"
-second_period_start_date = "18/08/2020"
-second_period_end_date= "20/08/2020"
+first_period_start_date = "01/08/2019"
+first_period_end_date= "22/08/2019"
+second_period_start_date = "01/08/2020"
+second_period_end_date= "22/08/2020"
 use_streamed_data_for_second_period= TRUE
 
 ########################################################
@@ -65,11 +63,12 @@ siccode_joined <- siccode_joined %>%
 
 # Add description
 siccode_joined <- siccode_joined %>% 
-                  mutate(SICCodeDesc = siccode_group[SICCode])
+                  mutate(SICCodeDesc = siccode_group[SICCode]) %>% 
+                  run_on_df(unlist)
   
 
 # Save it!
-write_csv(df,str_c("data/compare_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+write_csv(siccode_joined,str_c("data/compare_SICCodes_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv", collapse = ""))
 
 
 #################### Postcodes ########################
@@ -83,7 +82,7 @@ postcode_first <- group_by_postcode(companies,
 
 # ...and the second
 ifelse(use_streamed_data_for_second_period==TRUE, {
-  siccode_second <- grouped_siccodes
+  postcode_second <- grouped_postcodes
 }, {
   postcode_second <- group_by_postcode(companies, 
                                        siccode_group, 
@@ -152,7 +151,7 @@ siccode_and_postcode_joined <- siccode_and_postcode_joined %>%
 postcode_to_lad_lookup <- read_csv(postcode_to_lad_lookup_path) %>% 
   select(pcds, ladcd)
 new_by_siccode_and_lad <- left_join(siccode_and_postcode_joined, postcode_to_lad_lookup,by = c("RegAddress.PostCode" = "pcds")) %>% 
-  group_by(ladcd) %>% 
+  group_by(ladcd,SICCode) %>% 
   summarise(first_period_suffix = sum(!!as.name(before)),second_period_suffix = sum(!!as.name(after)))
 
 # Using lad boundaries file from geoportal.statistics.gov.uk
@@ -163,4 +162,17 @@ names <- read_csv(lad_names_path) %>%
 # Adding names
 new_by_siccode_and_lad <- left_join(new_by_siccode_and_lad, names, by = c("ladcd"="lad20cd"))
 
+# Add description
+new_by_siccode_and_lad <- new_by_siccode_and_lad %>% 
+  mutate(SICCodeDesc = siccode_group[SICCode]) %>% 
+  run_on_df(unlist)
+
 write_csv(new_by_siccode_and_lad,str_c("data/compare_by_SICCode_and_LAD_", format(Sys.time(), "%Y-%m-%d_%H%M%S_%Z"), ".csv"))
+
+# Runs a given function on all columns of a dataframe
+run_on_df <- function(df,func) {
+  for (i in seq_along(df)) {
+    df[[i]] <- func(df[[i]])
+  }
+  df
+}

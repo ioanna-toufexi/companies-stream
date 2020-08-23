@@ -12,12 +12,14 @@ filelist = c("data/16441500_to_16499999.json",
              "data/16500000_to_16998846.json",
              "data/16998847_to_17055978.json",
              "data/17055979_to_17087150.json",
-             "data/17087151_to_17112162.json")
+             "data/17087151_to_17112162.json",
+             "data/17112163_to_17179572.json",
+             "data/17179573_to_17248095.json")
 
 siccode_group = hospitality_all
 
-start_date = "2020-08-12"
-end_date = "2020-08-14"
+start_date = "2020-08-01"
+end_date = "2020-08-22"
 
 ###################################################
 

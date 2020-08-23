@@ -27,6 +27,7 @@ storeCompaniesFromStream <- function(file_name=NULL, timeout_in_secs=10, timepoi
     add_headers(`Accept-Encoding` = "gzip, deflate")),
     error = function(e) return(e))
   
+  print(r)
   
   if (!is.null(file_name)){ close(con) }
   
