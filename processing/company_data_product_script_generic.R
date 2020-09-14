@@ -5,11 +5,14 @@ source("processing/plotter.R")
 source("processing/sic_mappings.R")
 source("processing/mapper.R")
 
-# This script generates 
+# This script compares company incorporations between two time periods
+# Data for the first period is sourced from the CSV
+# Data for the second period is sourced either from the CSV or stream
+# Results are stored in CSVs
 
 ########## Edit these parameters before runs ########## 
 
-company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyData-2020-08-01-part6_6/BasicCompanyData-2020-08-01-part6_6.csv"
+company_data_product_path = "C:/Users/ioanna/Downloads/BasicCompanyDataAsOneFile-2020-08-01/BasicCompanyDataAsOneFile-2020-08-01.csv"
 postcode_to_lad_lookup_path = "C:/Users/ioanna/Downloads/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU/PCD_OA_LSOA_MSOA_LAD_FEB20_UK_LU.csv"
 lad_names_path = "C:/Users/ioanna/Downloads/Local_Authority_Districts__May_2020__Boundaries_UK_BFC.csv"
 
