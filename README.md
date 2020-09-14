@@ -44,9 +44,7 @@ Parsing will fail if streaming was cut prematurely and an event transmission was
 
 ## Data processing
 
-The folder ```/processing``` contains functions for analysis and visualisation of company data. The ```company_data_product_script.R``` demonstrates how to use the functions, end-to-end.
-
-The data processed are currently sourced from the bulk CSV file. Additional work is needed to consolidate the CSV and streaming data into a common format ready for analysis.
+The folder ```/processing``` contains functions for analysis and visualisation of company data. The ```company_data_product_script_generic.R``` demonstrates how to manipulate and compare data sourced from the stream and CSV, or from the CSV alone.
 
 ## Demo
 
